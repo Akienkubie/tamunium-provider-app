@@ -67,12 +67,22 @@ class AuthService {
         'status': 'active',
       });
     } else {
-      await _client.from('customers').upsert({
+      final existingCustomer = await _client
+          .from('customers')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+      final customerData = {
         'user_id': user.id,
         'contact_name': displayName,
         'email': user.email,
         'status': 'active',
-      }, onConflict: 'user_id');
+      };
+      if (existingCustomer == null) {
+        await _client.from('customers').insert(customerData);
+      } else {
+        await _client.from('customers').update(customerData).eq('id', existingCustomer['id']);
+      }
     }
   }
 
