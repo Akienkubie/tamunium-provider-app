@@ -85,7 +85,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 const Text('Create a provider or customer account. Your password is stored securely by Supabase Auth.'),
                 const SizedBox(height: 24),
                 DropdownButtonFormField<String>(
-                  value: _role,
+                  initialValue: _role,
                   decoration: const InputDecoration(labelText: 'Account type', border: OutlineInputBorder()),
                   items: const [
                     DropdownMenuItem(value: 'provider', child: Text('Service provider')),
