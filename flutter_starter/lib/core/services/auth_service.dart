@@ -17,7 +17,6 @@ class AuthService {
     required String password,
   }) async {
     await _client.auth.signInWithPassword(email: email, password: password);
-    await ensureApplicationProfile();
   }
 
   Future<void> sendPasswordResetEmail({required String email}) async {
