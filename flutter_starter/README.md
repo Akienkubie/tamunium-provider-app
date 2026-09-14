@@ -30,6 +30,21 @@ email-confirmed status under Authentication -> Users. Do not add passwords to
 `public.profiles`, `public.providers`, or `public.customers`; those tables are
 application profiles and are not used by Supabase Auth for password checking.
 
+## Onboarding and password reset
+
+The login screen includes `Create a new account`, where a person can choose
+Provider or Customer, enter a name and email, set a password, and confirm the
+password. Supabase Auth owns the password; after authentication the app creates
+the matching row in `public.profiles` and either `public.providers` or
+`public.customers` using the signed-in user's ID. Email confirmation remains
+controlled by Supabase Auth settings.
+
+Password fields include an eye button to show or hide what was typed. The
+forgot-password email uses the mobile redirect
+`com.tamunium.provider://reset-password`. Add that exact URL under Supabase
+Authentication -> URL Configuration -> Redirect URLs before testing password
+reset links on a phone. Do not use `http://localhost:3000` as a mobile redirect.
+
 ## How it maps to the backend
 
 - **Auth**: `AuthService` wraps `supabase.auth.signInWithPassword`. Swap
