@@ -17,6 +17,17 @@ class AuthService {
     required String password,
   }) async {
     await _client.auth.signInWithPassword(email: email, password: password);
+    final user = _client.auth.currentUser;
+    final metadata = user?.userMetadata ?? const <String, dynamic>{};
+    final role = metadata['role'];
+    if (user != null && (role == 'provider' || role == 'customer')) {
+      final existingProfile = await _client
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+      if (existingProfile == null) await ensureApplicationProfile();
+    }
   }
 
   Future<void> sendPasswordResetEmail({required String email}) async {
@@ -35,7 +46,7 @@ class AuthService {
     final response = await _client.auth.signUp(
       email: email,
       password: password,
-      data: {'full_name': fullName, 'role': role},
+      data: {'full_name': fullName, 'role': role, 'onboarding': true},
     );
     if (response.session != null) await ensureApplicationProfile();
     return response;
@@ -64,6 +75,10 @@ class AuthService {
         'full_name': displayName,
         'email': user.email,
         'status': 'active',
+        'verification_status': 'pending',
+        'current_availability': 'offline',
+        'availability_status': 'offline',
+        'managed_workforce_status': 'independent',
       });
     } else {
       final existingCustomer = await _client
