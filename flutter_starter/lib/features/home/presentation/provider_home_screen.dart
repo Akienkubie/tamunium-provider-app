@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../jobs/data/jobs_repository.dart';
 import '../../jobs/providers/jobs_provider.dart';
 import '../../jobs/presentation/available_jobs_screen.dart';
 import '../../jobs/presentation/my_jobs_screen.dart';
