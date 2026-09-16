@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/home/presentation/provider_home_screen.dart';
 
@@ -16,12 +18,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoggingIn = state.matchedLocation == '/login';
 
       if (!isLoggedIn && !isLoggingIn) return '/login';
+      final isResetting = state.matchedLocation == '/reset-password';
+      final isPasswordRecovery = authState.valueOrNull?.event == AuthChangeEvent.passwordRecovery;
+      if (isPasswordRecovery && isLoggedIn && !isResetting) return '/reset-password';
       if (isLoggedIn && isLoggingIn) return '/';
+      if (isResetting && !isLoggedIn) return '/login';
       return null;
     },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const ProviderHomeScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/reset-password', builder: (context, state) => const ResetPasswordScreen()),
     ],
   );
 });

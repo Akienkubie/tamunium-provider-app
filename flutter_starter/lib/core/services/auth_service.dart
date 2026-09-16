@@ -37,6 +37,10 @@ class AuthService {
     );
   }
 
+  Future<void> updatePassword(String password) async {
+    await _client.auth.updateUser(UserAttributes(password: password));
+  }
+
   Future<AuthResponse> signUp({
     required String email,
     required String password,
