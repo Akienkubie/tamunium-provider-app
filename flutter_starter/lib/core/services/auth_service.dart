@@ -46,11 +46,23 @@ class AuthService {
     required String password,
     required String fullName,
     required String role,
+    String? phone,
+    String? customerType,
+    String? organizationName,
+    String? address,
   }) async {
     final response = await _client.auth.signUp(
       email: email,
       password: password,
-      data: {'full_name': fullName, 'role': role, 'onboarding': true},
+      data: {
+        'full_name': fullName,
+        'role': role,
+        'onboarding': true,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (customerType != null) 'customer_type': customerType,
+        if (organizationName != null && organizationName.isNotEmpty) 'organization_name': organizationName,
+        if (address != null && address.isNotEmpty) 'address': address,
+      },
     );
     if (response.session != null) await ensureApplicationProfile();
     return response;
@@ -63,6 +75,7 @@ class AuthService {
     final role = metadata['role'] == 'customer' ? 'customer' : 'provider';
     final fullName = (metadata['full_name'] as String?)?.trim() ?? '';
     final displayName = fullName.isEmpty ? (user.email ?? 'TAMUNIUM user') : fullName;
+    final phone = metadata['phone'] as String?;
 
     await _client.from('profiles').upsert({
       'id': user.id,
@@ -70,6 +83,7 @@ class AuthService {
       'email': user.email,
       'role': role,
       'status': 'active',
+      if (phone != null && phone.isNotEmpty) 'phone': phone,
     });
 
     if (role == 'provider') {
@@ -95,6 +109,10 @@ class AuthService {
         'contact_name': displayName,
         'email': user.email,
         'status': 'active',
+        'customer_type': metadata['customer_type'] as String? ?? 'individual',
+        if (metadata['organization_name'] != null) 'organization_name': metadata['organization_name'],
+        if (metadata['address'] != null) 'address': metadata['address'],
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
       };
       if (existingCustomer == null) {
         await _client.from('customers').insert(customerData);
