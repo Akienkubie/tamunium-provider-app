@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/job_model.dart';
 import '../providers/jobs_provider.dart';
 import 'widgets/job_card.dart';
+import 'job_detail_screen.dart';
 
 /// Jobs currently offered to this provider, awaiting accept/reject.
 class AvailableJobsScreen extends ConsumerWidget {
@@ -64,7 +65,12 @@ class AvailableJobsScreen extends ConsumerWidget {
               final job = jobs[i];
               return Column(
                 children: [
-                  JobCard(job: job),
+                  JobCard(
+                    job: job,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => JobDetailScreen(jobId: job.id)),
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
