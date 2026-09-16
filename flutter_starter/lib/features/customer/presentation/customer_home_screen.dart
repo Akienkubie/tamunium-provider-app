@@ -5,6 +5,7 @@ import '../../../features/jobs/presentation/widgets/status_chip.dart';
 import '../../../models/job_model.dart';
 import '../data/customer_jobs_repository.dart';
 import 'customer_review_screen.dart';
+import 'customer_request_screen.dart';
 
 class CustomerHomeScreen extends ConsumerWidget {
   const CustomerHomeScreen({super.key});
@@ -25,6 +26,13 @@ class CustomerHomeScreen extends ConsumerWidget {
             ),
           ],
           bottom: const TabBar(tabs: [Tab(text: 'Active'), Tab(text: 'Completed')]),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const CustomerRequestScreen()),
+          ),
+          icon: const Icon(Icons.add_task),
+          label: const Text('Request service'),
         ),
         body: jobsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
