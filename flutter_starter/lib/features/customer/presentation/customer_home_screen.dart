@@ -6,6 +6,7 @@ import '../../../models/job_model.dart';
 import '../data/customer_jobs_repository.dart';
 import 'customer_review_screen.dart';
 import 'customer_request_screen.dart';
+import 'customer_request_history_screen.dart';
 
 class CustomerHomeScreen extends ConsumerWidget {
   const CustomerHomeScreen({super.key});
@@ -19,6 +20,13 @@ class CustomerHomeScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('TAMUNIUM'),
           actions: [
+            IconButton(
+              tooltip: 'My requests',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CustomerRequestHistoryScreen()),
+              ),
+              icon: const Icon(Icons.receipt_long_outlined),
+            ),
             IconButton(
               tooltip: 'Refresh jobs',
               onPressed: () => ref.invalidate(customerJobsStreamProvider),

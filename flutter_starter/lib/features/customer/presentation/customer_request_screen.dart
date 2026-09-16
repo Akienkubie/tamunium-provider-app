@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../data/customer_request_repository.dart';
 
 class CustomerRequestScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class _CustomerRequestScreenState extends ConsumerState<CustomerRequestScreen> {
   String _priority = 'normal';
   String? _timeWindow;
   DateTime? _preferredDate;
+  final List<XFile> _photos = [];
   bool _isSubmitting = false;
 
   @override
@@ -45,7 +47,8 @@ class _CustomerRequestScreenState extends ConsumerState<CustomerRequestScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(customerRequestRepositoryProvider).submitRequest(
+      final repository = ref.read(customerRequestRepositoryProvider);
+      final requestId = await repository.submitRequest(
             categoryId: _categoryId!,
             serviceType: _serviceTypeController.text.trim(),
             description: _descriptionController.text.trim(),
@@ -55,6 +58,9 @@ class _CustomerRequestScreenState extends ConsumerState<CustomerRequestScreen> {
             preferredTimeWindow: _timeWindow,
             customerNotes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
           );
+      for (final photo in _photos) {
+        await repository.uploadRequestPhoto(requestId: requestId, file: photo);
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request submitted. TAMUNIUM Central will review it shortly.')));
       Navigator.of(context).pop();
@@ -62,6 +68,14 @@ class _CustomerRequestScreenState extends ConsumerState<CustomerRequestScreen> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not submit request: $error')));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _pickPhotos() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickMultiImage(imageQuality: 80, maxWidth: 1600);
+    if (picked.isNotEmpty) {
+      setState(() => _photos.addAll(picked.take(5 - _photos.length)));
     }
   }
 
@@ -117,6 +131,12 @@ class _CustomerRequestScreenState extends ConsumerState<CustomerRequestScreen> {
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(labelText: 'Service address', hintText: 'Where should the provider come?', border: OutlineInputBorder(), prefixIcon: Icon(Icons.location_on_outlined)),
                 validator: (value) => value == null || value.trim().length < 5 ? 'Enter the service address' : null,
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: _isSubmitting || _photos.length >= 5 ? null : _pickPhotos,
+                icon: const Icon(Icons.photo_library_outlined),
+                label: Text(_photos.isEmpty ? 'Add photos (optional)' : '${_photos.length}/5 photos selected'),
               ),
               const SizedBox(height: 20),
               Text('Urgency', style: Theme.of(context).textTheme.titleMedium),
