@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../../models/job_model.dart';
 import '../providers/jobs_provider.dart';
@@ -15,6 +16,7 @@ class JobDetailScreen extends ConsumerStatefulWidget {
 
 class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
   bool _isSubmitting = false;
+  bool _isUploadingEvidence = false;
   final _notesController = TextEditingController();
 
   @override
@@ -54,6 +56,36 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _uploadEvidence(JobModel job) async {
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1600,
+      maxHeight: 1600,
+      imageQuality: 85,
+    );
+    if (file == null) return;
+    setState(() => _isUploadingEvidence = true);
+    try {
+      await ref.read(jobEvidenceRepositoryProvider).uploadCompletionPhoto(
+            jobId: job.id,
+            file: file,
+          );
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Completion photo uploaded.')));
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not upload completion photo: $error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingEvidence = false);
     }
   }
 
@@ -118,6 +150,43 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
               label: const Text('Start Job'),
             ),
           if (job.status == 'in_progress') ...[
+            Text('Completion evidence', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            FutureBuilder(
+              future: ref.read(jobEvidenceRepositoryProvider).listForJob(job.id),
+              builder: (context, snapshot) {
+                final evidence = snapshot.data;
+                if (evidence == null || evidence.isEmpty) {
+                  return const Text('No completion photos uploaded yet.');
+                }
+                return SizedBox(
+                  height: 96,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: evidence.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (_, index) => ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        evidence[index].signedUrl!,
+                        width: 96,
+                        height: 96,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _isUploadingEvidence ? null : () => _uploadEvidence(job),
+              icon: _isUploadingEvidence
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.add_a_photo_outlined),
+              label: Text(_isUploadingEvidence ? 'Uploading…' : 'Add completion photo'),
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _notesController,
               maxLines: 3,

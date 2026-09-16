@@ -2,9 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/job_model.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../data/jobs_repository.dart';
+import '../data/job_evidence_repository.dart';
 
 final jobsRepositoryProvider = Provider<JobsRepository>((ref) {
   return JobsRepository(ref.watch(supabaseClientProvider));
+});
+
+final jobEvidenceRepositoryProvider = Provider<JobEvidenceRepository>((ref) {
+  return JobEvidenceRepository(ref.watch(supabaseClientProvider));
 });
 
 /// Single realtime subscription per provider; screens derive their own
