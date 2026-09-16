@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../../models/job_model.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/jobs_provider.dart';
 import 'widgets/status_chip.dart';
 
@@ -48,6 +49,7 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                 ? null
                 : _notesController.text.trim(),
           );
+      ref.invalidate(currentProviderProvider);
       if (mounted) Navigator.of(context).pop();
     } catch (_) {
       if (mounted) {
