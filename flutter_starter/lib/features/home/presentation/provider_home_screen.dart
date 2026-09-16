@@ -4,6 +4,8 @@ import '../../auth/providers/auth_provider.dart';
 import '../../jobs/providers/jobs_provider.dart';
 import '../../jobs/presentation/available_jobs_screen.dart';
 import '../../jobs/presentation/my_jobs_screen.dart';
+import '../../profile/presentation/provider_profile_screen.dart';
+import '../../../shared/widgets/tamunium_avatar.dart';
 
 const _availabilityOptions = ['available', 'busy', 'offline', 'on_leave'];
 
@@ -71,12 +73,20 @@ class ProviderHomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Welcome back,', style: Theme.of(context).textTheme.bodyMedium),
-                Text(
-                  provider.fullName,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: TamuniumAvatar(
+                    imageUrl: provider.photoUrl,
+                    name: provider.fullName,
+                    size: 58,
+                    verified: provider.verificationStatus == 'verified',
+                  ),
+                  title: Text('Welcome back, ${provider.fullName}'),
+                  subtitle: const Text('View and update your provider profile'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ProviderProfileScreen()),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Card(

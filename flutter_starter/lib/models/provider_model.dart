@@ -10,6 +10,7 @@ class ProviderModel {
   final int jobsCompleted;
   final String currentAvailability; // available, busy, offline, on_leave
   final String verificationStatus;
+  final String? photoUrl;
 
   ProviderModel({
     required this.id,
@@ -22,6 +23,7 @@ class ProviderModel {
     required this.jobsCompleted,
     required this.currentAvailability,
     required this.verificationStatus,
+    this.photoUrl,
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,7 @@ class ProviderModel {
       currentAvailability:
           json['current_availability'] as String? ?? 'offline',
       verificationStatus: json['verification_status'] as String? ?? 'pending',
+      photoUrl: json['photo_url'] as String?,
     );
   }
 }
