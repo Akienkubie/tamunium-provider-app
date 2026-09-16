@@ -10,13 +10,36 @@ class JobsRepository {
   /// provider or visible to staff, so this is safe to query directly.
   /// Screens filter by status client-side (offered / active / history)
   /// so we only need one realtime subscription per provider.
-  Stream<List<JobModel>> myJobs(String providerId) {
-    return _client
+  Future<List<JobModel>> fetchMyJobs(String providerId) async {
+    final rows = await _client
         .from('jobs')
-        .stream(primaryKey: ['id'])
+        .select()
         .eq('assigned_provider_id', providerId)
-        .order('scheduled_start')
-        .map((rows) => rows.map(JobModel.fromJson).toList());
+        .order('scheduled_start');
+    return rows.map(JobModel.fromJson).toList();
+  }
+
+  Stream<List<JobModel>> myJobs(String providerId) async* {
+    // Always render the current database state first. This prevents a
+    // Realtime configuration problem from making a real job appear as zero.
+    yield await fetchMyJobs(providerId);
+
+    while (true) {
+      try {
+        await for (final rows in _client
+            .from('jobs')
+            .stream(primaryKey: ['id'])
+            .eq('assigned_provider_id', providerId)
+            .order('scheduled_start')) {
+          yield rows.map(JobModel.fromJson).toList();
+        }
+      } catch (_) {
+        // Realtime can be unavailable until the table is added to the
+        // publication. Keep the app usable and refresh the database state.
+        await Future<void>.delayed(const Duration(seconds: 10));
+        yield await fetchMyJobs(providerId);
+      }
+    }
   }
 
   Future<JobModel?> getJob(String jobId) async {
