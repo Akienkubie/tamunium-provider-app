@@ -11,24 +11,22 @@ final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService(ref.watch(supabaseClientProvider));
 });
 
-/// Emits every time auth state changes (sign in / sign out / token refresh).
 final authStateProvider = StreamProvider<AuthState>((ref) {
   return ref.watch(authServiceProvider).authStateChanges;
 });
 
-/// The current logged-in user's row from `providers`, keyed by auth.uid().
-/// Null if the logged-in profile isn't a provider (e.g. an admin account).
+final currentProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
+  final client = ref.watch(supabaseClientProvider);
+  final user = client.auth.currentUser;
+  if (user == null) return null;
+  return client.from('profiles').select('id, full_name, role, avatar_url').eq('id', user.id).maybeSingle();
+});
+
 final currentProviderProvider = FutureProvider<ProviderModel?>((ref) async {
   final client = ref.watch(supabaseClientProvider);
   final user = client.auth.currentUser;
   if (user == null) return null;
-
-  final row = await client
-      .from('providers')
-      .select()
-      .eq('user_id', user.id)
-      .maybeSingle();
-
+  final row = await client.from('providers').select().eq('user_id', user.id).maybeSingle();
   if (row == null) return null;
   return ProviderModel.fromJson(row);
 });
