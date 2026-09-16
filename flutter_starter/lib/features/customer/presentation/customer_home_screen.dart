@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../features/jobs/presentation/widgets/status_chip.dart';
 import '../../../models/job_model.dart';
 import '../data/customer_jobs_repository.dart';
+import 'customer_review_screen.dart';
 
 class CustomerHomeScreen extends ConsumerWidget {
   const CustomerHomeScreen({super.key});
@@ -84,7 +85,9 @@ class _JobList extends StatelessWidget {
                 if (job.status == 'completed') ...[
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => CustomerReviewScreen(jobId: job.id)),
+                    ),
                     icon: const Icon(Icons.rate_review_outlined),
                     label: const Text('Review provider'),
                   ),
