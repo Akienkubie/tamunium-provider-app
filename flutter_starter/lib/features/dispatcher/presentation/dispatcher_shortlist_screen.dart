@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/dispatcher_repository.dart';
 
 class DispatcherShortlistScreen extends ConsumerStatefulWidget {
-  const DispatcherShortlistScreen({super.key});
+  final bool embedInShell;
+  const DispatcherShortlistScreen({super.key, this.embedInShell = false});
 
   @override
   ConsumerState<DispatcherShortlistScreen> createState() => _DispatcherShortlistScreenState();
@@ -50,9 +51,7 @@ class _DispatcherShortlistScreenState extends ConsumerState<DispatcherShortlistS
   @override
   Widget build(BuildContext context) {
     final requests = ref.watch(dispatcherOpenRequestsProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('TAMUNIUM Central'), actions: [IconButton(onPressed: () => ref.invalidate(dispatcherOpenRequestsProvider), icon: const Icon(Icons.refresh), tooltip: 'Refresh requests')]),
-      body: requests.when(
+    final body = requests.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('Could not load dispatcher queue: $error'))),
         data: (items) {
@@ -90,8 +89,14 @@ class _DispatcherShortlistScreenState extends ConsumerState<DispatcherShortlistS
             },
           );
         },
-      ),
-    );
+      );
+    if (widget.embedInShell) {
+      return Column(children: [
+        Align(alignment: Alignment.centerRight, child: IconButton(onPressed: () => ref.invalidate(dispatcherOpenRequestsProvider), icon: const Icon(Icons.refresh), tooltip: 'Refresh requests')),
+        Expanded(child: body),
+      ]);
+    }
+    return Scaffold(appBar: AppBar(title: const Text('TAMUNIUM Central'), actions: [IconButton(onPressed: () => ref.invalidate(dispatcherOpenRequestsProvider), icon: const Icon(Icons.refresh), tooltip: 'Refresh requests')]), body: body);
   }
 }
 
