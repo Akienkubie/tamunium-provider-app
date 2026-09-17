@@ -11,7 +11,9 @@ class DispatcherShortlistScreen extends ConsumerStatefulWidget {
 
 class _DispatcherShortlistScreenState extends ConsumerState<DispatcherShortlistScreen> {
   String? _rankingRequest;
+  String? _assigningProvider;
   final Map<String, List<Map<String, dynamic>>> _matches = {};
+  final Set<String> _assignedRequests = {};
 
   Future<void> _rank(String requestId) async {
     setState(() => _rankingRequest = requestId);
@@ -23,6 +25,21 @@ class _DispatcherShortlistScreenState extends ConsumerState<DispatcherShortlistS
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not rank providers: $error')));
     } finally {
       if (mounted) setState(() => _rankingRequest = null);
+    }
+  }
+
+  Future<void> _assign(String requestId, String providerId, String providerName) async {
+    setState(() => _assigningProvider = providerId);
+    try {
+      final result = await ref.read(dispatcherRepositoryProvider).assignProvider(requestId: requestId, providerId: providerId);
+      if (!mounted) return;
+      setState(() => _assignedRequests.add(requestId));
+      ref.invalidate(dispatcherOpenRequestsProvider);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$providerName assigned. Job ${result['job_id']} offered.')));
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not assign provider: $error')));
+    } finally {
+      if (mounted) setState(() => _assigningProvider = null);
     }
   }
 
@@ -49,6 +66,7 @@ class _DispatcherShortlistScreenState extends ConsumerState<DispatcherShortlistS
               final id = request['id'].toString();
               final category = (request['service_categories'] as Map?)?['category_name']?.toString();
               final matches = _matches[id];
+              final assigned = _assignedRequests.contains(id);
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -58,12 +76,13 @@ class _DispatcherShortlistScreenState extends ConsumerState<DispatcherShortlistS
                     Text('Request $id'),
                     Text('Priority: ${_text(request['priority'])} · ${_text(request['service_address'], 'Address pending')}'),
                     const SizedBox(height: 12),
-                    SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: _rankingRequest == id ? null : () => _rank(id), icon: _rankingRequest == id ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.auto_awesome), label: Text(_rankingRequest == id ? 'Ranking providers...' : 'Rank providers'))),
+                    if (!assigned) SizedBox(width: double.infinity, child: FilledButton.icon(onPressed: _rankingRequest == id ? null : () => _rank(id), icon: _rankingRequest == id ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.auto_awesome), label: Text(_rankingRequest == id ? 'Ranking providers...' : 'Rank providers'))),
+                    if (assigned) const Padding(padding: EdgeInsets.only(top: 12), child: Row(children: [Icon(Icons.check_circle, color: Colors.green), SizedBox(width: 8), Text('Provider assigned and offer sent')])),
                     if (matches != null) ...[
                       const SizedBox(height: 12),
                       Text('${matches.length} ranked provider${matches.length == 1 ? '' : 's'}', style: Theme.of(context).textTheme.titleSmall),
                       const SizedBox(height: 8),
-                      ...matches.map((match) => _MatchCard(match: match, score: _score)),
+                      ...matches.map((match) => _MatchCard(match: match, score: _score, assigning: _assigningProvider == match['provider_id'], disabled: assigned || _assigningProvider != null, onAssign: () => _assign(id, match['provider_id'].toString(), ((match['providers'] as Map?)?['full_name']?.toString() ?? 'Provider')))),
                     ],
                   ]),
                 ),
@@ -79,7 +98,10 @@ class _DispatcherShortlistScreenState extends ConsumerState<DispatcherShortlistS
 class _MatchCard extends StatelessWidget {
   final Map<String, dynamic> match;
   final Widget Function(String, dynamic) score;
-  const _MatchCard({required this.match, required this.score});
+  final bool assigning;
+  final bool disabled;
+  final VoidCallback onAssign;
+  const _MatchCard({required this.match, required this.score, required this.assigning, required this.disabled, required this.onAssign});
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +116,8 @@ class _MatchCard extends StatelessWidget {
         Row(children: [score('Match', match['match_score']), score('Skills', match['skill_score']), score('Rating', match['rating_score']), score('Distance', match['distance_km'] == null ? '—' : '${match['distance_km']} km')]),
         const SizedBox(height: 6),
         Row(children: [score('Reliability', match['reliability_score']), score('Availability', match['availability_score']), score('Jobs', provider['jobs_completed']), score('Rating', provider['overall_rating'])]),
+        const SizedBox(height: 10),
+        SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: disabled ? null : onAssign, icon: assigning ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.send_outlined), label: Text(assigning ? 'Assigning...' : 'Assign provider'))),
       ]),
     );
   }

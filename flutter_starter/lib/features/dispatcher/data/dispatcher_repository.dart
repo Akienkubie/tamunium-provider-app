@@ -28,6 +28,19 @@ class DispatcherRepository {
         .order('rank');
     return List<Map<String, dynamic>>.from(rows);
   }
+
+  Future<Map<String, dynamic>> assignProvider({
+    required String requestId,
+    required String providerId,
+    String? notes,
+  }) async {
+    final result = await _client.rpc('assign_provider_to_request', params: {
+      'p_request_id': requestId,
+      'p_provider_id': providerId,
+      'p_notes': notes,
+    });
+    return Map<String, dynamic>.from(result as Map);
+  }
 }
 
 final dispatcherRepositoryProvider = Provider<DispatcherRepository>((ref) {
