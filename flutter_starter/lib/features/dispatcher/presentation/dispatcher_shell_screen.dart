@@ -102,13 +102,19 @@ class _CentralOverview extends StatelessWidget {
         const SizedBox(height: 8),
         const Text('Here is what is happening across your service ecosystem today.'),
         const SizedBox(height: 24),
-        const Row(children: [Expanded(child: _MetricCard(label: 'Open requests', value: '—', icon: Icons.inbox_outlined)), SizedBox(width: 10), Expanded(child: _MetricCard(label: 'Active jobs', value: '—', icon: Icons.work_outline))]),
+        Row(children: [Expanded(child: _MetricCard(label: 'Open requests', value: '—', icon: Icons.inbox_outlined, onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DispatcherShortlistScreen())))), const SizedBox(width: 10), Expanded(child: _MetricCard(label: 'Active jobs', value: '—', icon: Icons.work_outline, onTap: () => _showModuleMessage(context, 'Jobs')))]),
         const SizedBox(height: 10),
-        const Row(children: [Expanded(child: _MetricCard(label: 'Verified providers', value: '—', icon: Icons.verified_outlined)), SizedBox(width: 10), Expanded(child: _MetricCard(label: 'System health', value: 'Live', icon: Icons.health_and_safety_outlined))]),
+        Row(children: [Expanded(child: _MetricCard(label: 'Verified providers', value: '—', icon: Icons.verified_outlined, onTap: () => _showModuleMessage(context, 'Providers'))), const SizedBox(width: 10), Expanded(child: _MetricCard(label: 'System health', value: 'Live', icon: Icons.health_and_safety_outlined, onTap: () => _showModuleMessage(context, 'Reports')))]),
         const SizedBox(height: 24),
         const Card(child: ListTile(leading: Icon(Icons.hub_outlined), title: Text('One ecosystem. One operating loop.'), subtitle: Text('Open the menu to manage requests, providers, jobs, payments, and reports.'))),
+        const SizedBox(height: 16),
+        FilledButton.icon(onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DispatcherShortlistScreen())), icon: const Icon(Icons.inbox_outlined), label: const Text('Open request queue')),
       ],
     );
+  }
+
+  static void _showModuleMessage(BuildContext context, String module) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$module module is connected to the Central menu and is being built next.')));
   }
 }
 
@@ -116,10 +122,11 @@ class _MetricCard extends StatelessWidget {
   final String label;
   final String value;
   final IconData icon;
-  const _MetricCard({required this.label, required this.value, required this.icon});
+  final VoidCallback? onTap;
+  const _MetricCard({required this.label, required this.value, required this.icon, this.onTap});
 
   @override
-  Widget build(BuildContext context) => Card(child: Padding(padding: const EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(icon, color: Theme.of(context).colorScheme.primary), const SizedBox(height: 12), Text(value, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)), Text(label, style: Theme.of(context).textTheme.bodySmall)])));
+  Widget build(BuildContext context) => Card(child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(12), child: Padding(padding: const EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(icon, color: Theme.of(context).colorScheme.primary), const SizedBox(height: 12), Text(value, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)), Text(label, style: Theme.of(context).textTheme.bodySmall), if (onTap != null) const Padding(padding: EdgeInsets.only(top: 8), child: Text('Open', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)))]))));
 }
 
 class _ComingSoonPage extends StatelessWidget {
