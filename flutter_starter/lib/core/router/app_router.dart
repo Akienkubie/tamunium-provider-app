@@ -14,7 +14,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     refreshListenable: _AuthStateNotifier(ref),
     redirect: (context, state) {
-      final isLoggedIn = authState.valueOrNull?.session != null;
+      // Read the client session synchronously. The auth stream can briefly be
+      // loading after app startup or after a phone resumes the app; relying
+      // only on valueOrNull can leave a valid user stuck on the login screen.
+      final isLoggedIn = Supabase.instance.client.auth.currentSession != null;
       final isLoggingIn = state.matchedLocation == '/login';
 
       if (!isLoggedIn && !isLoggingIn) return '/login';
