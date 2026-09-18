@@ -76,13 +76,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (error is AuthException) {
       switch (error.code) {
         case 'invalid_credentials':
-          return 'Email or password is incorrect. Use the email created in Supabase Authentication > Users, not the provider display name.';
+          return 'Email or password is incorrect. Use the email you registered with TAMUNIUM.';
         case 'email_not_confirmed':
-          return 'Confirm this email in Supabase Authentication > Users before signing in.';
+          return 'Confirm your TAMUNIUM email address before signing in.';
         case 'user_not_found':
-          return 'No Supabase Auth account exists for this email. Create it in Authentication > Users or use Forgot password.';
+          return 'No TAMUNIUM account was found for this email. Check the address or create a new account.';
         default:
-          return 'Sign-in failed (${error.code}): ${error.message}';
+          return 'TAMUNIUM sign-in failed. Please try again.';
       }
     }
     return 'Sign-in failed: $error';

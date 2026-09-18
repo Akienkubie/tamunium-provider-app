@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dispatcher_shortlist_screen.dart';
 
 class DispatcherShellScreen extends StatefulWidget {
@@ -64,6 +65,14 @@ class _DispatcherShellScreenState extends State<DispatcherShellScreen> {
                 ),
               ),
               const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Sign out'),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await Supabase.instance.client.auth.signOut();
+                },
+              ),
               const Padding(padding: EdgeInsets.all(16), child: Align(alignment: Alignment.centerLeft, child: Text('Staff operations', style: TextStyle(fontSize: 12, color: Colors.grey)))),
             ],
           ),

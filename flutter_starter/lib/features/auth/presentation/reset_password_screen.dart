@@ -36,11 +36,11 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       await ref.read(authServiceProvider).updatePassword(_passwordController.text);
       await ref.read(authServiceProvider).signOut();
       if (!mounted) return;
-      setState(() => _message = 'Password updated. You can now sign in with your new password.');
+      setState(() => _message = 'Your TAMUNIUM password was updated. You can now sign in with your new password.');
     } on AuthException catch (error) {
       if (mounted) setState(() => _message = _friendlyError(error));
     } catch (_) {
-      if (mounted) setState(() => _message = 'Password update failed. Request a new reset email and try again.');
+      if (mounted) setState(() => _message = 'TAMUNIUM could not update the password. Request a new reset email and try again.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -49,7 +49,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   String _friendlyError(AuthException error) {
     if (error.code == 'same_password') return 'Choose a password different from the old password.';
     if (error.code == 'weak_password') return 'Choose a stronger password with at least eight characters.';
-    return 'Password update failed. The reset link may have expired.';
+    return 'TAMUNIUM could not update the password. The reset link may have expired or already been used.';
   }
 
   InputDecoration _decoration(String label, bool visible, VoidCallback toggle) {

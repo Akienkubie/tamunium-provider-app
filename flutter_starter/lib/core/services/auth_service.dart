@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// signInWithPassword for signInWithOtp(phone: ...) later for phone-first
 /// provider onboarding without changing anything downstream.
 class AuthService {
+  static const emailConfirmationRedirect = 'com.tamunium.provider://auth-callback/';
+  static const passwordRecoveryRedirect = 'com.tamunium.provider://reset-password/';
   final SupabaseClient _client;
   AuthService(this._client);
 
@@ -33,7 +35,7 @@ class AuthService {
   Future<void> sendPasswordResetEmail({required String email}) async {
     await _client.auth.resetPasswordForEmail(
       email,
-      redirectTo: 'com.tamunium.provider://reset-password',
+      redirectTo: passwordRecoveryRedirect,
     );
   }
 
@@ -54,6 +56,7 @@ class AuthService {
     final response = await _client.auth.signUp(
       email: email,
       password: password,
+      emailRedirectTo: emailConfirmationRedirect,
       data: {
         'full_name': fullName,
         'role': role,
