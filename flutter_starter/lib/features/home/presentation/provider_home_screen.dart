@@ -5,6 +5,7 @@ import '../../jobs/providers/jobs_provider.dart';
 import '../../jobs/presentation/available_jobs_screen.dart';
 import '../../jobs/presentation/my_jobs_screen.dart';
 import '../../profile/presentation/provider_profile_screen.dart';
+import '../../workforce/presentation/workforce_onboarding_screen.dart';
 import '../../../shared/widgets/tamunium_avatar.dart';
 
 const _availabilityOptions = ['available', 'busy', 'offline', 'on_leave'];
@@ -118,6 +119,16 @@ class ProviderHomeScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
+                ListTile(
+                  tileColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  leading: const Icon(Icons.assignment_outlined),
+                  title: const Text('Workforce onboarding'),
+                  subtitle: const Text('Complete verification to become eligible for matched jobs'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WorkforceOnboardingScreen())),
+                ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
